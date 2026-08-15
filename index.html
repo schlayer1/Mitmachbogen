@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eltern-Mitmachbogen - Heimbürgeschule Kahla</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        body { font-family: 'Nunito', sans-serif; background-color: #f8fafc; color: #334155; }
+        .section-card { border-width: 2px; border-style: solid; border-radius: 1rem; padding: 1.25rem; background-color: white; margin-bottom: 1.5rem; }
+        .section-title { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 1.125rem; margin-bottom: 1rem; border-bottom-width: 2px; padding-bottom: 0.5rem; }
+        
+        .color-1 { border-color: #1e5b82; } .color-1 .section-title { color: #1e5b82; border-bottom-color: #1e5b82; }
+        .color-2 { border-color: #729b5a; } .color-2 .section-title { color: #729b5a; border-bottom-color: #729b5a; }
+        .color-3 { border-color: #e59f48; } .color-3 .section-title { color: #e59f48; border-bottom-color: #e59f48; }
+        .color-4 { border-color: #8f71a9; } .color-4 .section-title { color: #8f71a9; border-bottom-color: #8f71a9; }
+        .color-5 { border-color: #3c8f99; } .color-5 .section-title { color: #3c8f99; border-bottom-color: #3c8f99; }
+        .color-6 { border-color: #4a7fb2; } .color-6 .section-title { color: #4a7fb2; border-bottom-color: #4a7fb2; }
+        .color-7 { border-color: #e8b84c; } .color-7 .section-title { color: #e8b84c; border-bottom-color: #e8b84c; }
+        .color-8 { border-color: #2a737d; } .color-8 .section-title { color: #2a737d; border-bottom-color: #2a737d; }
+
+        .checkbox-container { display: flex; align-items: flex-start; margin-bottom: 0.5rem; cursor: pointer; }
+        .checkbox-container input[type="checkbox"], .checkbox-container input[type="radio"] { width: 1.25rem; height: 1.25rem; margin-right: 0.75rem; margin-top: 0.1rem; cursor: pointer; accent-color: #2b7b9e; flex-shrink: 0; }
+        .text-input, .select-input { width: 100%; border-bottom: 1px solid #94a3b8; padding: 0.25rem 0; margin-top: 0.25rem; background: transparent; outline: none; transition: border-color 0.2s; }
+        .text-input:focus, .select-input:focus { border-bottom: 2px solid #2b7b9e; }
+        .select-input { border: 1px solid #94a3b8; border-radius: 0.25rem; padding: 0.25rem; }
+        
+        #loader { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 50; justify-content: center; align-items: center; flex-direction: column; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3c8f99; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* PRINT STYLES */
+        @media print {
+            body { background-color: white; color: black; }
+            .no-print { display: none !important; }
+            #view-admin { padding: 0; margin: 0; }
+            .print-only { display: block !important; }
+            table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; font-size: 11pt; page-break-inside: avoid; }
+            th { background-color: #f0f0f0 !important; font-weight: bold; }
+            span[class*="bg-"] { background-color: transparent !important; color: black !important; padding: 0 !important; margin: 0 !important; }
+            span[class*="bg-"]::after { content: ", "; }
+            span[class*="bg-"]:last-child::after { content: ""; }
+            h1 { font-size: 18pt; color: black !important; margin-bottom: 5px; }
+            .print-header { border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px; }
+            @page { margin: 1.5cm; }
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen relative pb-12">
+
+    <!-- OVERLAYS -->
+    <div id="loader" class="no-print">
+        <div class="spinner mb-4"></div>
+        <p class="text-lg font-semibold text-gray-700" id="loader-text">Wird verarbeitet...</p>
+    </div>
+
+    <!-- Reusable Message Modal (Ersetzt alert) -->
+    <div id="message-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex justify-center items-center p-4 no-print">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+            <i id="message-icon" class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+            <h3 id="message-title" class="text-2xl font-bold mb-2">Erfolg!</h3>
+            <p id="message-text" class="text-gray-600 mb-4">Die Daten wurden erfolgreich verarbeitet.</p>
+            
+            <div id="delete-code-container" class="hidden bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-yellow-800 mb-2 font-bold">Wichtig: Ihr Bearbeitungs-Code</p>
+                <p class="text-xs text-yellow-700 mb-3">Notieren Sie sich diesen Code, um Ihr Angebot später ändern oder pausieren zu können:</p>
+                
+                <div class="flex items-center justify-center gap-2">
+                    <div class="text-xl font-mono font-bold tracking-widest text-gray-800 bg-white py-2 px-3 rounded border border-gray-300 select-all cursor-text flex-1" id="display-delete-code"></div>
+                    <button onclick="copyCodeToClipboard(this)" class="bg-[#1e5b82] hover:bg-[#154261] text-white px-4 py-2.5 rounded border border-transparent transition flex items-center justify-center shadow-sm" title="Code kopieren">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="document.getElementById('message-modal').classList.add('hidden')" class="bg-[#3c8f99] text-white px-6 py-2 rounded-full font-bold hover:bg-[#2a737d] transition mt-2">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Reusable Confirm Modal (Ersetzt confirm) -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex justify-center items-center p-4 no-print">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
+            <i class="fas fa-question-circle text-4xl text-[#e59f48] mb-4"></i>
+            <h3 id="confirm-title" class="text-xl font-bold mb-2 text-gray-800">Bestätigung</h3>
+            <p id="confirm-text" class="text-gray-600 mb-6 text-sm">Sind Sie sicher?</p>
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('confirm-modal').classList.add('hidden')" class="flex-1 bg-gray-200 text-gray-700 font-bold py-2 rounded-lg hover:bg-gray-300 transition">Abbrechen</button>
+                <button onclick="executeConfirm()" class="flex-1 bg-[#2a737d] text-white font-bold py-2 rounded-lg hover:bg-[#1f565e] transition">Bestätigen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN NOTE MODAL -->
+    <div id="admin-note-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 no-print">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-sticky-note text-yellow-500 mr-2"></i> Interne Notiz</h3>
+                <button onclick="document.getElementById('admin-note-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">Notiz für: <strong id="note-modal-name" class="text-gray-700"></strong><br><span class="text-xs italic">(Für Eltern unsichtbar. Ideal für Tags oder Besonderheiten)</span></p>
+            <textarea id="admin-note-textarea" class="w-full border-2 border-yellow-200 bg-yellow-50 p-3 rounded-lg h-32 outline-none focus:border-yellow-400 transition resize-none" placeholder="z.B. 'Hat einen großen Anhänger', 'Orga-Team Schulfest' oder 'Nur Freitags'"></textarea>
+            <div class="flex gap-2 mt-4">
+                <button onclick="document.getElementById('admin-note-modal').classList.add('hidden')" class="flex-1 bg-gray-200 text-gray-700 font-bold py-2 rounded-lg hover:bg-gray-300 transition">Abbrechen</button>
+                <button onclick="saveNoteModal()" class="flex-1 bg-yellow-500 text-white font-bold py-2 rounded-lg hover:bg-yellow-600 transition">Speichern</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CLEANUP MODAL -->
+    <div id="cleanup-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 no-print">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl text-center">
+            <i class="fas fa-broom text-5xl text-red-500 mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">DSGVO Aufräum-Assistent</h3>
+            <p class="text-gray-600 mb-6">Es wurden <strong id="cleanup-count" class="text-red-600 text-xl">0</strong> abgelaufene Einträge gefunden (Kind ist über Klasse 10 oder 1-Jahres-Frist abgelaufen).</p>
+            <div class="bg-red-50 text-red-800 p-3 text-sm rounded mb-6 text-left border border-red-200">
+                <strong>Achtung:</strong> Diese Aktion löscht die entsprechenden Datensätze unwiderruflich aus der Datenbank.
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button onclick="document.getElementById('cleanup-modal').classList.add('hidden')" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-300 transition">Abbrechen</button>
+                <button onclick="confirmCleanup()" class="flex-1 bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600 transition shadow-lg">Unwiderruflich löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ============================================== -->
+        <!-- VIEW: FORMULAR (ELTERN)                        -->
+        <!-- ============================================== -->
+        <div id="view-form" class="no-print">
+            
+            <!-- HEADER -->
+            <div class="text-center mb-8 relative">
+                <!-- Logo der Schule -->
+                <img src="logo.png" alt="Logo Heimbürgeschule Kahla" class="mx-auto h-32 w-auto mb-6 drop-shadow-sm" onerror="this.onerror=null; this.src='https://via.placeholder.com/150x150?text=Logo+Hier+Einf%C3%BCgen';">
+                
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#2b7b9e] mb-2 tracking-tight">Eltern-Mitmachbogen</h1>
+                <h2 class="text-xl sm:text-2xl font-bold text-[#1e5b82] mb-3">der Heimbürgeschule in Kahla</h2>
+                <h3 class="text-lg sm:text-xl font-bold text-[#729b5a] mb-6">Ihre Talente sind wertvoll für unsere Schule!</h3>
+                
+                <div id="edit-mode-banner" class="hidden bg-yellow-100 border-2 border-yellow-400 p-4 rounded-xl mb-6 shadow-sm text-yellow-900 text-left">
+                    <div class="flex justify-between items-start flex-wrap gap-4">
+                        <div>
+                            <h3 class="font-bold text-lg mb-1"><i class="fas fa-edit"></i> Bearbeitungs-Modus aktiv</h3>
+                            <p class="text-sm">Sie können hier Ihr bestehendes Angebot aktualisieren oder vorübergehend pausieren.</p>
+                            <button type="button" onclick="cancelEdit()" class="mt-2 text-sm underline hover:text-yellow-700">Abbrechen & Neues Formular</button>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-yellow-300 shadow-sm">
+                            <label class="flex items-center space-x-2 cursor-pointer font-bold text-gray-700">
+                                <input type="checkbox" id="f_isPaused" class="w-5 h-5 accent-yellow-600 cursor-pointer">
+                                <span>⏸️ Mein Angebot pausieren</span>
+                            </label>
+                            <p class="text-[10px] text-gray-500 mt-1 max-w-[200px] leading-tight">Ihre Daten bleiben erhalten, aber Sie werden der Schule vorerst nicht als aktiver Helfer angezeigt.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-left bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-sm sm:text-base leading-relaxed mb-6">
+                    <p class="mb-3"><strong>Liebe Eltern und Sorgeberechtigte,</strong></p>
+                    <p class="mb-3">jede und jeder von Ihnen bringt besondere Fähigkeiten, berufliche Erfahrungen, Hobbys oder Kontakte mit. Mit diesem Bogen möchten wir ein <strong class="text-[#2b7b9e]">Kompetenznetzwerk unserer Schulgemeinschaft</strong> aufbauen, um bei Projekten, Berufsorientierung, Veranstaltungen oder im Unterricht auf dieses vielfältige Wissen zurückgreifen zu können.</p>
+                    <p class="font-bold">Vielen Dank, dass Sie unsere Schulgemeinschaft bereichern!</p>
+                </div>
+            </div>
+
+            <!-- FORM START -->
+            <form id="mitmach-form" onsubmit="handleFormSubmit(event)">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    
+                    <!-- BLOCK 1 -->
+                    <div class="section-card color-1 h-full md:col-span-2">
+                        <div class="section-title">
+                            <span><span class="bg-[#1e5b82] text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2 text-sm">1</span> Kontaktdaten & Kinder</span>
+                            <i class="far fa-user"></i>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Linke Seite: Eltern -->
+                            <div class="space-y-4">
+                                <h3 class="text-sm font-bold text-gray-500 border-b pb-1">Elternteil / Sorgeberechtigte(r)</h3>
+                                <div><input type="text" id="f_elternName" class="text-input" placeholder="Vor- und Nachname:" required></div>
+                                <div><input type="tel" id="f_telefon" class="text-input" placeholder="Telefon (falls Kontakt hierüber erwünscht):"></div>
+                                <div><input type="email" id="f_email" class="text-input" placeholder="E-Mail (falls Kontakt hierüber erwünscht):"></div>
+                            </div>
+
+                            <!-- Rechte Seite: Kinder (Dynamisch) -->
+                            <div>
+                                <h3 class="text-sm font-bold text-gray-500 border-b pb-1 mb-3">Kind(er) an der Schule</h3>
+                                <div id="kinder-liste" class="space-y-3">
+                                    <!-- Kinder werden hier per JS eingefügt -->
+                                </div>
+                                <button type="button" onclick="addKindField()" class="mt-3 text-sm text-[#1e5b82] font-bold hover:underline flex items-center">
+                                    <i class="fas fa-plus-circle mr-1"></i> Weiteres Kind hinzufügen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BLOCK 2 -->
+                    <div class="section-card color-2 h-full">
+                        <div class="section-title">
+                            <span><span class="bg-[#729b5a] text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2 text-sm">2</span> Beruf und Fachwissen</span>
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <p class="text-sm font-bold mb-3">Ich kann die Schule unterstützen durch meinen Beruf oder mein Fachwissen:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Handwerk" onchange="toggleInput(this, 'beruf_handwerk_input')"> <span>Handwerk</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Verwaltung"> <span>Verwaltung</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Medizin / Pflege"> <span>Medizin / Pflege</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Wirtschaft / Bank"> <span>Wirtschaft / Bank</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Polizei / Feuerwehr"> <span>Polizei / Feuerwehr</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Gastronomie"> <span>Gastronomie</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="IT / Computer"> <span>IT / Computer</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Kunst / Musik"> <span>Kunst / Musik</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Naturwissenschaften"> <span>Naturwissenschaften</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Sport" onchange="toggleInput(this, 'beruf_sport_input')"> <span>Sport</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Landwirtschaft"> <span>Landwirtschaft</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_beruf" value="Sonstiges" onchange="toggleInput(this, 'beruf_sonstiges_input')"> <span>Sonstiges</span></label>
+                        </div>
+                        <input type="text" id="beruf_handwerk_input" class="text-input hidden mt-2 text-sm" placeholder="Welches Handwerk?">
+                        <input type="text" id="beruf_sport_input" class="text-input hidden mt-2 text-sm" placeholder="Welche Sportart/Richtung?">
+                        <input type="text" id="beruf_sonstiges_input" class="text-input hidden mt-2 text-sm" placeholder="Sonstiges Fachwissen:">
+                    </div>
+
+                    <!-- BLOCK 3 -->
+                    <div class="section-card color-3 h-full">
+                        <div class="section-title">
+                            <span><span class="bg-[#e59f48] text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2 text-sm">3</span> Unternehmen / Betrieb</span>
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <p class="text-sm font-bold mb-1">Ich arbeite bei oder führe folgenden Betrieb:</p>
+                        <input type="text" id="f_betriebName" class="text-input mb-4" placeholder="Name des Unternehmens">
+                        <p class="text-sm font-bold mb-2">Mögliche Unterstützung:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                            <label class="checkbox-container"><input type="checkbox" name="c_betrieb" value="Praktikumsplätze"> <span>Praktikumsplätze</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_betrieb" value="Sponsoring"> <span>Sponsoring</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_betrieb" value="Betriebsbesichtigungen"> <span>Betriebsbesichtigungen</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_betrieb" value="Materialspenden"> <span>Materialspenden</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_betrieb" value="Berufsvorträge"> <span>Berufsvorträge</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_betrieb" value="Sonstiges" onchange="toggleInput(this, 'betrieb_sonstiges_input')"> <span>Sonstiges</span></label>
+                        </div>
+                        <input type="text" id="betrieb_sonstiges_input" class="text-input hidden mt-2 text-sm" placeholder="Sonstige Unterstützung:">
+                    </div>
+
+                    <!-- BLOCK 4 -->
+                    <div class="section-card color-4 h-full">
+                        <div class="section-title">
+                            <span><span class="bg-[#8f71a9] text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2 text-sm">4</span> Fähigkeiten oder Hobbys</span>
+                            <i class="far fa-star"></i>
+                        </div>
+                        <p class="text-sm font-bold mb-3">Ich kann anbieten:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Nähen"> <span>Nähen</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Musik"> <span>Musik</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Werken/Holz"> <span>Werken/Holz</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Fremdsprachen"> <span>Fremdsprachen</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Gartenarbeit"> <span>Gartenarbeit</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Erste Hilfe"> <span>Erste Hilfe</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Fotografieren"> <span>Fotografieren</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Programmieren"> <span>Programmieren</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Kochen/Backen"> <span>Kochen/Backen</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Imkern"> <span>Imkern</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Basteln"> <span>Basteln</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_hobbys" value="Jagen/Naturpäd."> <span>Jagen/Naturpäd.</span></label>
+                            <label class="checkbox-container col-span-full"><input type="checkbox" name="c_hobbys" value="Sonstiges" onchange="toggleInput(this, 'hobbys_sonstiges_input')"> <span>Sonstiges</span></label>
+                        </div>
+                        <input type="text" id="hobbys_sonstiges_input" class="text-input hidden mt-1 text-sm" placeholder="Weitere Hobbys:">
+                    </div>
+
+                    <!-- BLOCK 5 -->
+                    <div class="section-card color-5 md:col-span-2">
+                        <div class="section-title">
+                            <span><span class="bg-[#3c8f99] text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2 text-sm">5</span> Unterstützung bei Veranstaltungen</span>
+                            <i class="far fa-calendar-alt"></i>
+                        </div>
+                        <p class="text-sm font-bold mb-3">Ich helfe gern bei:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Schulfest"> <span>Schulfest</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Begleitung von Ausflügen"> <span>Begleitung von Ausflügen</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Auf- und Abbau"> <span>Auf- und Abbau</span></label>
+                            
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Wandertagen"> <span>Wandertagen</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Projekten im Unterricht"> <span>Projekten im Unterricht</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Betreuung von Stationen"> <span>Betreuung von Stationen</span></label>
+                            
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Projekttagen"> <span>Projekttagen</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Gestaltung / Dekoration"> <span>Gestaltung / Dekoration</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Sportfest"> <span>Sportfest</span></label>
+                            
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Weihnachtsmarkt"> <span>Weihnachtsmarkt</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_events" value="Kuchenbasar"> <span>Kuchenbasar</span></label>
+                            <label class="checkbox-container flex-1 whitespace-nowrap"><input type="checkbox" name="c_events" value="Sonstiges" onchange="toggleInput(this, 'events_sonstiges_input')"> <span>Sonstiges</span></label>
+                        </div>
+                        <input type="text" id="events_sonstiges_input" class="text-input hidden mt-2 text-sm w-full md:w-1/3" placeholder="Sonstige Veranstaltungen:">
+                    </div>
+
+                    <!-- BLOCK 6 -->
+                    <div class="section-card color-6 md:col-span-2">
+                        <div class="section-title">
+                            <span><span class="bg-[#4a7fb2] text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2 text-sm">6</span> Kontakt zu Vereinen</span>
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <p class="text-sm font-bold mb-3">Ich bin Mitglied in einem Verein / habe Kontakte und kann folgende Unterstützung vermitteln:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                            <label class="checkbox-container"><input type="checkbox" name="c_vereine" value="Sportverein" onchange="toggleInput(this, 'vereine_sport_input')"> <span>Sportverein</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_vereine" value="Kulturverein" onchange="toggleInput(this, 'vereine_kultur_input')"> <span>Kulturverein (Theater, Kunst)</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_vereine" value="Naturverein" onchange="toggleInput(this, 'vereine_natur_input')"> <span>Natur- / Umweltverein</span></label>
+                            <label class="checkbox-container"><input type="checkbox" name="c_vereine" value="Sozialer Verein" onchange="toggleInput(this, 'vereine_sozial_input')"> <span>Sozialer Verein / Hilfsorg.</span></label>
+                            <label class="checkbox-container col-span-full md:col-span-1"><input type="checkbox" name="c_vereine" value="Sonstiges" onchange="toggleInput(this, 'vereine_sonstiges_input')"> <span>Sonstiges</span></label>
+                        </div>
+                        <input type="text" id="vereine_sport_input" class="text-input hidden mt-2 text-sm w-full" placeholder="Welcher Sportverein?">
+                        <input type="text" id="vereine_kultur_input" class="text-input hidden mt-2 text-sm w-full" placeholder="Welcher Kulturverein?">
+                        <input type="text" id="vereine_natur_input" class="text-input hidden mt-2 text-sm w-full" placeholder="Welcher Natur-/Umweltverein?">
+                        <input type="text" id="vereine_sozial_input" class="text-input hidden mt-2 text-sm w-full" placeholder="Welcher soziale Verein?">
+                        <input type="text" id="vereine_sonstiges_input" class="text-input hidden mt-2 text-sm w-full" placeholder="Welcher sonstige Verein?">
+                    </div>
+
+                    <!-- BLOCK 7 -->
+                    <div class="section-card color-7 h-full">
+                        <div class="section-title">
+                            <span><span class="bg-[#e8b84c] text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2 text-sm">7</span> Gültigkeit & Umfang</span>
+                            <i class="far fa-clock"></i>
+                        </div>
+                        <p class="text-sm font-bold mb-2">Mein Angebot gilt:</p>
+                        <div class="flex flex-col space-y-2 text-sm mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                            <label class="checkbox-container"><input type="radio" name="r_gueltigkeit" value="dauerhaft" required> <span><strong>Dauerhaft</strong> (Solange mein Kind an der Schule ist)</span></label>
+                            <label class="checkbox-container"><input type="radio" name="r_gueltigkeit" value="nur_dieses_jahr"> <span><strong>Nur für dieses Schuljahr</strong></span></label>
+                        </div>
+                        
+                        <p class="text-sm font-bold mb-2 pt-2 border-t border-gray-100">Der zeitliche Umfang:</p>
+                        <div class="flex flex-col space-y-2 text-sm">
+                            <label class="checkbox-container"><input type="radio" name="r_zeit" value="einmalig" required> <span>einmalig / bei einem speziellen Event</span></label>
+                            <label class="checkbox-container"><input type="radio" name="r_zeit" value="gelegentlich"> <span>gelegentlich</span></label>
+                            <label class="checkbox-container"><input type="radio" name="r_zeit" value="regelmäßig"> <span>regelmäßig</span></label>
+                            <label class="checkbox-container"><input type="radio" name="r_zeit" value="nach vorheriger Absprache"> <span>nach vorheriger Absprache</span></label>
+                        </div>
+                    </div>
+
+                    <!-- BLOCK 8 -->
+                    <div class="section-card color-8 h-full">
+                        <div class="section-title">
+                            <span><span class="bg-[#2a737d] text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2 text-sm">8</span> Einverständniserklärung</span>
+                            <i class="far fa-edit"></i>
+                        </div>
+                        <label class="checkbox-container items-start text-sm mb-4">
+                            <input type="checkbox" id="f_dsgvo" class="mt-1" required>
+                            <span class="leading-tight">Ich bin damit einverstanden, dass diese Angaben ausschließlich für schulische Zwecke verwendet und innerhalb der Schule nur den zuständigen Lehrkräften zugänglich gemacht werden.</span>
+                        </label>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <div class="flex-1">
+                                <input type="text" id="f_ortDatum" class="text-input" placeholder="Ort, Datum" required>
+                            </div>
+                            <div class="flex-1">
+                                <input type="text" id="f_unterschrift" class="text-input italic" placeholder="Vor- & Nachname (Gilt als Unterschrift)" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center bg-blue-50 p-6 rounded-2xl border-2 border-blue-100 relative overflow-hidden">
+                    <p class="font-bold text-[#2b7b9e] text-lg mb-4">Unser Ziel: ein starkes Kompetenznetzwerk unserer Schulgemeinschaft – für vielfältige Chancen und tolle Erlebnisse unserer Kinder!</p>
+                    <button type="submit" id="btn-submit" class="bg-[#2a737d] hover:bg-[#1f565e] text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 w-full sm:w-auto relative z-10">
+                        Mitmachbogen absenden <i class="fas fa-paper-plane ml-2"></i>
+                    </button>
+                    <p class="mt-4 text-gray-500 italic relative z-10">Vielen Dank für Ihre Mitwirkung!</p>
+                </div>
+            </form>
+        </div>
+
+
+        <!-- ============================================== -->
+        <!-- VIEW: ADMIN LOGIN                              -->
+        <!-- ============================================== -->
+        <div id="view-login" class="hidden max-w-md mx-auto pt-20 no-print">
+            <div class="bg-white p-8 rounded-2xl shadow-lg text-center border-2 border-gray-100 relative">
+                <button onclick="switchView('form')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i class="fas fa-times"></i></button>
+                <i class="fas fa-lock text-4xl text-gray-400 mb-4"></i>
+                <h2 class="text-2xl font-bold mb-2 text-gray-700">Lehrer / Admin Bereich</h2>
+                <p class="text-sm text-gray-500 mb-6">Bitte geben Sie das Schul-Passwort ein.</p>
+                
+                <input type="password" id="admin-password" class="w-full border-2 border-gray-300 p-3 rounded-lg mb-2 text-center focus:border-[#3c8f99] outline-none" placeholder="Passwort eingeben">
+                <p id="login-error" class="text-red-500 text-sm hidden mb-4 font-bold">Falsches Passwort!</p>
+                
+                <button onclick="attemptLogin()" class="w-full bg-[#3c8f99] text-white font-bold py-3 rounded-lg hover:bg-[#2a737d] transition mt-2">Einloggen</button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: ELTERN LÖSCHEN / BEARBEITEN (OPT-OUT)    -->
+        <!-- ============================================== -->
+        <div id="view-edit" class="hidden max-w-md mx-auto pt-10 no-print">
+            <div class="bg-white p-8 rounded-2xl shadow-lg text-center border-2 border-yellow-200 relative">
+                <button onclick="switchView('form')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i class="fas fa-times"></i></button>
+                <i class="fas fa-edit text-4xl text-yellow-500 mb-4"></i>
+                <h2 class="text-2xl font-bold mb-2 text-gray-700">Angebot bearbeiten / löschen</h2>
+                <p class="text-sm text-gray-600 mb-6">Bitte geben Sie Ihren Bearbeitungs-Code ein, den Sie bei der Anmeldung erhalten haben.</p>
+                
+                <input type="text" id="edit-code-input" class="w-full border-2 border-gray-300 p-3 rounded-lg mb-6 text-center font-mono text-xl tracking-widest focus:border-yellow-500 outline-none uppercase" placeholder="HELFER-XXXX">
+                
+                <button onclick="attemptLoadForEdit()" class="w-full bg-[#e59f48] text-white font-bold py-3 rounded-lg hover:bg-[#c9893d] transition mb-3 flex justify-center items-center">
+                    <i class="fas fa-folder-open mr-2"></i> Daten laden & bearbeiten
+                </button>
+
+                <button onclick="attemptDelete()" class="w-full bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600 transition mb-4 flex justify-center items-center">
+                    <i class="fas fa-trash-alt mr-2"></i> Angebot unwiderruflich löschen
+                </button>
+                <p class="text-xs text-gray-400 mt-2">Falls Sie den Code nicht mehr haben, kontaktieren Sie bitte die Schule.</p>
+            </div>
+        </div>
+
+
+        <!-- ============================================== -->
+        <!-- VIEW: ADMIN DASHBOARD                          -->
+        <!-- ============================================== -->
+        <div id="view-admin" class="hidden">
+            <div class="hidden print-only print-header">
+                <h1 class="font-bold">Helferkartei - Gefilterte Liste</h1>
+                <p>Stand: <span id="print-date"></span></p>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 no-print">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-[#2a737d]">Helferkartei Dashboard</h1>
+                    <p class="text-gray-500 text-sm">Übersicht, Auswertung und Kontakt-Management</p>
+                </div>
+                <div class="flex gap-2 flex-wrap justify-end">
+                    <button onclick="openCleanupModal()" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-lg font-bold transition flex items-center shadow-sm mr-2" title="Abgelaufene Datensätze DSGVO-konform löschen">
+                        <i class="fas fa-broom mr-2"></i> Aufräumen
+                    </button>
+                    
+                    <button onclick="window.print()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 px-4 py-2 rounded-lg font-bold shadow-sm transition flex items-center">
+                        <i class="fas fa-print mr-2"></i> Drucken
+                    </button>
+                    <button onclick="exportCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition flex items-center">
+                        <i class="fas fa-file-excel mr-2"></i> CSV Export
+                    </button>
+                    <button onclick="switchView('form')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold transition ml-4">
+                        Abmelden
+                    </button>
+                </div>
+            </div>
+
+            <!-- DASHBOARD STATS -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 no-print">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide mb-1 font-bold">Aktive Helfer (Familien)</p>
+                    <p class="text-3xl font-extrabold text-[#1e5b82]" id="stat-total">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-green-100 text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide mb-1 font-bold">Event-Helfer</p>
+                    <p class="text-3xl font-extrabold text-[#729b5a]" id="stat-events">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-purple-100 text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide mb-1 font-bold">Besond. Fähigkeiten</p>
+                    <p class="text-3xl font-extrabold text-[#8f71a9]" id="stat-hobbys">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-yellow-100 text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide mb-1 font-bold">Pausiert</p>
+                    <p class="text-3xl font-extrabold text-gray-400" id="stat-paused">0</p>
+                </div>
+            </div>
+
+            <!-- FILTERS & ACTIONS -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-col gap-4 no-print">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="search-input" onkeyup="renderTable()" class="w-full bg-blue-50 border border-blue-200 pl-10 pr-4 py-2 rounded-lg outline-none focus:border-[#3c8f99] font-semibold text-[#1e5b82]" placeholder="Freitext-Suche (z.B. Name, 'Handwerk', 'Klasse 7', 'Fotografieren', eigene Notizen...)">
+                    </div>
+                    <div class="w-full md:w-64">
+                        <select id="filter-gueltigkeit" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-200 p-2 rounded-lg outline-none focus:border-[#3c8f99]">
+                            <option value="aktive">Nur Aktive (Standard)</option>
+                            <option value="alle">Alle (inkl. Pausierte/Abgelaufene)</option>
+                            <option value="pausiert">Nur Pausierte anzeigen</option>
+                            <option value="abgelaufen">Nur Abgelaufene anzeigen</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-200">
+                    <div class="flex items-center">
+                        <button onclick="sendBulkMail()" class="bg-[#1e5b82] hover:bg-[#154261] text-white px-3 py-1.5 rounded font-bold transition flex items-center text-sm shadow-sm">
+                            <i class="fas fa-mail-bulk mr-2"></i> Sammel-Mail an Auswahl (BCC)
+                        </button>
+                        <span class="text-xs text-gray-500 ml-3 italic">Markieren Sie Eltern in der Tabelle, um sie alle gleichzeitig anzuschreiben.</span>
+                    </div>
+                    <p class="text-sm font-bold text-gray-600">Zeigt <span id="filtered-count" class="text-[#3c8f99]">0</span> Treffer</p>
+                </div>
+            </div>
+
+            <!-- DATA TABLE -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="admin-table">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
+                            <th class="p-3 w-10 text-center no-print border-r"><input type="checkbox" id="select-all-cb" onclick="toggleSelectAll(this)" class="w-4 h-4 cursor-pointer"></th>
+                            <th class="p-3 font-bold">Elternteil / Kontakt</th>
+                            <th class="p-3 font-bold">Kind(er) & Klasse</th>
+                            <th class="p-3 font-bold">Angebotene Hilfe & Details</th>
+                            <th class="p-3 font-bold">Zeit / Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="text-sm divide-y divide-gray-100">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+                <div id="empty-state" class="hidden p-8 text-center text-gray-500 no-print">
+                    <i class="fas fa-folder-open text-4xl mb-3 text-gray-300"></i>
+                    <p>Keine Einträge gefunden, die den Filtern entsprechen.</p>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- End Main Container -->
+
+    <!-- FOOTER LINKS -->
+    <div class="fixed bottom-0 w-full bg-white border-t border-gray-200 p-2 flex justify-center gap-6 text-xs text-gray-500 z-40 no-print">
+        <button onclick="switchView('edit')" class="hover:text-[#e59f48] transition font-bold"><i class="fas fa-edit"></i> Mein Angebot bearbeiten / pausieren</button>
+        <button onclick="switchView('login')" class="hover:text-[#3c8f99] transition"><i class="fas fa-lock"></i> Admin Login</button>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- JAVASCRIPT LOGIC                               -->
+    <!-- ============================================== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, getDocs, onSnapshot, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // =========================================================================
+        // === HIER FÜR DIE ECHTE SCHULE ANPASSEN ==================================
+        // =========================================================================
+        
+        // 1. Dein eigenes Admin-Passwort für die Schule (statt admin123)
+        // Setze hier das gewünschte Passwort in die Anführungszeichen ein.
+        const ADMIN_PASSWORD = "admin123"; 
+
+        // 2. Deine Firebase Cloud Konfiguration (siehe Anleitung unten im Chat)
+        // Ersetze das Wort null durch den kompletten { ... } Block von Firebase!
+        // Beispiel:
+        // const MY_FIREBASE_CONFIG = {
+        //    apiKey: "AIzaSyDEINE_SCHLUESSEL...",
+        //    authDomain: "deine-schule.firebaseapp.com",
+        //    projectId: "deine-schule",
+        //    storageBucket: "deine-schule.appspot.com",
+        //    messagingSenderId: "123456789",
+        //    appId: "1:123456789:web:abcdef"
+        // };
+        
+        const MY_FIREBASE_CONFIG = null; 
+        
+        // =========================================================================
+
+        document.getElementById('print-date').innerText = new Date().toLocaleDateString('de-DE');
+
+        let db;
+        let auth;
+        let appId;
+        let volunteersData = [];
+        let unsubscribeSnapshot = null;
+        let currentEditDocId = null; 
+        let currentEditDeleteCode = null;
+        window.currentNoteDocId = null; 
+        let expiredDocIdsForCleanup = [];
+
+        async function initFirebase() {
+            try {
+                let firebaseConfig = MY_FIREBASE_CONFIG;
+                if (!firebaseConfig) {
+                    firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+                }
+                
+                if (!firebaseConfig) { console.warn("Firebase offline/demo mode."); return; }
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token && !MY_FIREBASE_CONFIG) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) { console.error("Firebase Init Error:", error); }
+        }
+        initFirebase();
+
+        // --- CUSTOM MODALS & UI ---
+        function showLoader(text = "Wird verarbeitet...") { document.getElementById('loader-text').innerText = text; document.getElementById('loader').style.display = 'flex'; }
+        function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+        
+        function showMessage(title, text, isError = false, deleteCode = null) {
+            document.getElementById('message-title').innerText = title;
+            document.getElementById('message-text').innerText = text;
+            const icon = document.getElementById('message-icon');
+            const codeContainer = document.getElementById('delete-code-container');
+            
+            if (isError) {
+                icon.className = "fas fa-exclamation-triangle text-5xl text-red-500 mb-4";
+                document.getElementById('message-title').classList.add('text-red-500');
+                codeContainer.classList.add('hidden');
+            } else {
+                icon.className = "fas fa-check-circle text-5xl text-green-500 mb-4";
+                document.getElementById('message-title').classList.remove('text-red-500');
+                if(deleteCode) {
+                    document.getElementById('display-delete-code').innerText = deleteCode;
+                    codeContainer.classList.remove('hidden');
+                } else codeContainer.classList.add('hidden');
+            }
+            document.getElementById('message-modal').classList.remove('hidden');
+        }
+
+        let confirmCallback = null;
+        window.showConfirm = function(title, text, callback) {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-text').innerText = text;
+            confirmCallback = callback;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+        window.executeConfirm = function() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            if(confirmCallback) confirmCallback();
+        }
+
+        window.copyCodeToClipboard = function(btnElement) {
+            const code = document.getElementById('display-delete-code').innerText;
+            const tempInput = document.createElement("input");
+            tempInput.value = code;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy"); 
+            document.body.removeChild(tempInput);
+            
+            const originalHtml = btnElement.innerHTML;
+            btnElement.innerHTML = '<i class="fas fa-check"></i>';
+            btnElement.classList.remove('bg-[#1e5b82]', 'hover:bg-[#154261]');
+            btnElement.classList.add('bg-green-600', 'hover:bg-green-700');
+            setTimeout(() => { 
+                btnElement.innerHTML = originalHtml; 
+                btnElement.classList.remove('bg-green-600', 'hover:bg-green-700');
+                btnElement.classList.add('bg-[#1e5b82]', 'hover:bg-[#154261]');
+            }, 2000);
+        }
+
+        // --- DYNAMISCHE KINDER FELDER (ANGEPASST 5.-10. KLASSE) ---
+        let kindIndex = 0;
+        window.addKindField = function(kindName = '', startSchuljahr = '2026', startKlasse = '') {
+            const container = document.getElementById('kinder-liste');
+            const id = `kind_${kindIndex++}`;
+            const div = document.createElement('div');
+            div.className = "kind-entry relative bg-gray-50 p-3 rounded-lg border border-gray-200 transition";
+            div.id = id;
+            
+            const delBtn = kindIndex > 1 ? `<button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-sm"><i class="fas fa-times"></i></button>` : '';
+
+            div.innerHTML = `
+                ${delBtn}
+                <div class="mb-2">
+                    <input type="text" class="text-input i-kindName text-sm" placeholder="Vorname des Kindes:" value="${kindName}" required>
+                </div>
+                <div class="flex gap-2 items-end">
+                    <div class="w-1/2">
+                        <label class="text-xs text-gray-500 mb-1 block">Aktuelles Schuljahr:</label>
+                        <select class="select-input i-schuljahr text-sm" required>
+                            <option value="2026" ${startSchuljahr == '2026' ? 'selected' : ''}>26/27</option>
+                            <option value="2027" ${startSchuljahr == '2027' ? 'selected' : ''}>27/28</option>
+                            <option value="2028" ${startSchuljahr == '2028' ? 'selected' : ''}>28/29</option>
+                            <option value="2029" ${startSchuljahr == '2029' ? 'selected' : ''}>29/30</option>
+                            <option value="2030" ${startSchuljahr == '2030' ? 'selected' : ''}>30/31</option>
+                            <option value="2031" ${startSchuljahr == '2031' ? 'selected' : ''}>31/32</option>
+                            <option value="2032" ${startSchuljahr == '2032' ? 'selected' : ''}>32/33</option>
+                            <option value="2033" ${startSchuljahr == '2033' ? 'selected' : ''}>33/34</option>
+                            <option value="2034" ${startSchuljahr == '2034' ? 'selected' : ''}>34/35</option>
+                            <option value="2035" ${startSchuljahr == '2035' ? 'selected' : ''}>35/36</option>
+                        </select>
+                    </div>
+                    <div class="w-1/2">
+                        <label class="text-xs text-gray-500 mb-1 block">Klasse (Zahl):</label>
+                        <!-- Anpassung: min 5, max 10 -->
+                        <input type="number" class="text-input i-klasse text-sm m-0" placeholder="z.B. 5" min="5" max="10" value="${startKlasse}" required>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+        addKindField();
+        function clearKinderFields() { document.getElementById('kinder-liste').innerHTML = ''; kindIndex = 0; }
+
+        window.toggleInput = function(checkboxElement, inputId) {
+            const input = document.getElementById(inputId);
+            if(checkboxElement.checked) { input.classList.remove('hidden'); input.focus(); } 
+            else { input.classList.add('hidden'); input.value = ""; }
+        }
+
+        window.switchView = function(view) {
+            ['form', 'login', 'admin', 'edit'].forEach(v => document.getElementById(`view-${v}`).classList.add('hidden'));
+            document.getElementById(`view-${view}`).classList.remove('hidden');
+            if (view === 'admin') loadAdminData();
+            else if (view === 'form') {
+                if(unsubscribeSnapshot) unsubscribeSnapshot();
+                if(currentEditDocId === null) {
+                    document.getElementById('mitmach-form').reset();
+                    clearKinderFields();
+                    addKindField();
+                    document.querySelectorAll('.text-input.hidden').forEach(el => el.classList.add('hidden'));
+                }
+            }
+        }
+
+        window.attemptLogin = function() {
+            const errorText = document.getElementById('login-error');
+            if (document.getElementById('admin-password').value === ADMIN_PASSWORD) {
+                document.getElementById('admin-password').value = '';
+                errorText.classList.add('hidden');
+                switchView('admin');
+            } else {
+                errorText.classList.remove('hidden');
+            }
+        }
+
+        function generateDeleteCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let result = 'HELFER-';
+            for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+            return result;
+        }
+
+        function getCurrentSchoolYear() {
+            const now = new Date();
+            return now.getMonth() + 1 < 8 ? now.getFullYear() - 1 : now.getFullYear();
+        }
+
+        // --- SUBMIT (CREATE OR UPDATE) ---
+        window.handleFormSubmit = async function(e) {
+            e.preventDefault();
+            
+            const getCheckedValues = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el => el.value);
+            const getVal = (id) => document.getElementById(id).value.trim();
+
+            const kinder = [];
+            document.querySelectorAll('.kind-entry').forEach(entry => {
+                kinder.push({
+                    name: entry.querySelector('.i-kindName').value.trim(),
+                    startSchuljahr: parseInt(entry.querySelector('.i-schuljahr').value, 10),
+                    startKlasse: parseInt(entry.querySelector('.i-klasse').value, 10)
+                });
+            });
+
+            const isUpdate = currentEditDocId !== null;
+            const finalDeleteCode = isUpdate ? currentEditDeleteCode : generateDeleteCode();
+
+            const formData = {
+                kinder: kinder,
+                elternName: getVal('f_elternName'),
+                telefon: getVal('f_telefon'),
+                email: getVal('f_email'),
+                berufe: getCheckedValues('c_beruf'),
+                beruf_handwerk_detail: getVal('beruf_handwerk_input'),
+                beruf_sport_detail: getVal('beruf_sport_input'),
+                beruf_sonstiges_detail: getVal('beruf_sonstiges_input'),
+                betriebName: getVal('f_betriebName'),
+                betrieb: getCheckedValues('c_betrieb'),
+                betrieb_sonstiges_detail: getVal('betrieb_sonstiges_input'),
+                hobbys: getCheckedValues('c_hobbys'),
+                hobbys_sonstiges_detail: getVal('hobbys_sonstiges_input'),
+                events: getCheckedValues('c_events'),
+                events_sonstiges_detail: getVal('events_sonstiges_input'),
+                vereine: getCheckedValues('c_vereine'),
+                vereine_sport_detail: getVal('vereine_sport_input'),
+                vereine_kultur_detail: getVal('vereine_kultur_input'),
+                vereine_natur_detail: getVal('vereine_natur_input'),
+                vereine_sozial_detail: getVal('vereine_sozial_input'),
+                vereine_sonstiges_detail: getVal('vereine_sonstiges_input'),
+                gueltigkeit: document.querySelector('input[name="r_gueltigkeit"]:checked')?.value || 'dauerhaft',
+                zeit: document.querySelector('input[name="r_zeit"]:checked')?.value || '',
+                dsgvo: document.getElementById('f_dsgvo').checked,
+                ortDatum: getVal('f_ortDatum'),
+                unterschrift: getVal('f_unterschrift'),
+                isPaused: document.getElementById('f_isPaused').checked,
+                deleteCode: finalDeleteCode,
+                timestamp: isUpdate ? (volunteersData.find(v=>v.id===currentEditDocId)?.timestamp || Date.now()) : Date.now()
+            };
+
+            showLoader(isUpdate ? "Aktualisiere Daten..." : "Speichere Daten sicher...");
+
+            try {
+                if (db && auth.currentUser) {
+                    if(isUpdate) {
+                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'elternhelfer', currentEditDocId);
+                        await updateDoc(docRef, formData);
+                    } else {
+                        // Determine proper collection path based on MY_FIREBASE_CONFIG presence
+                        // If user provided their own config, we can save to a root collection.
+                        // If in Canvas demo mode, we MUST adhere to RULE 1.
+                        let collRef;
+                        if(MY_FIREBASE_CONFIG) {
+                            collRef = collection(db, 'elternhelfer'); // Clean root path for real usage
+                        } else {
+                            collRef = collection(db, 'artifacts', appId, 'public', 'data', 'elternhelfer'); // Strict path for Canvas demo
+                        }
+                        await addDoc(collRef, formData);
+                    }
+                } else {
+                    if(isUpdate) {
+                        const idx = volunteersData.findIndex(v => v.id === currentEditDocId);
+                        if(idx > -1) volunteersData[idx] = {...volunteersData[idx], ...formData, id: currentEditDocId};
+                    } else {
+                        formData.id = "mock-" + Date.now();
+                        volunteersData.push(formData); 
+                    }
+                }
+                hideLoader();
+                cancelEdit();
+                if(isUpdate) showMessage("Erfolgreich aktualisiert!", formData.isPaused ? "Ihr Angebot wurde pausiert." : "Ihre Änderungen wurden übernommen.", false, null);
+                else showMessage("Erfolgreich gesendet!", "Vielen Dank für Ihre Unterstützung!", false, finalDeleteCode);
+            } catch (err) {
+                hideLoader(); console.error(err);
+                showMessage("Fehler", "Es gab ein Problem beim Speichern. Bitte überprüfen Sie Ihre Internetverbindung.", true);
+            }
+        }
+
+        // --- EDIT LOGIC (OPT-IN FOR PARENTS) ---
+        window.attemptLoadForEdit = async function() {
+            const inputCode = document.getElementById('edit-code-input').value.trim().toUpperCase();
+            if(!inputCode) { showMessage("Hinweis", "Bitte geben Sie einen Code ein.", true); return; }
+            showLoader("Suche Daten...");
+            let foundDoc = null;
+            try {
+                if (db && auth.currentUser) {
+                    let collRef = MY_FIREBASE_CONFIG ? collection(db, 'elternhelfer') : collection(db, 'artifacts', appId, 'public', 'data', 'elternhelfer');
+                    const snapshot = await getDocs(collRef);
+                    snapshot.forEach(doc => { if(doc.data().deleteCode === inputCode) foundDoc = {id: doc.id, ...doc.data()}; });
+                } else {
+                    foundDoc = volunteersData.find(d => d.deleteCode === inputCode);
+                }
+                if(foundDoc) {
+                    hideLoader(); document.getElementById('edit-code-input').value = "";
+                    populateFormForEdit(foundDoc);
+                } else { hideLoader(); showMessage("Fehler", "Code nicht gefunden. Bitte überprüfen Sie Ihre Eingabe.", true); }
+            } catch(e) { hideLoader(); showMessage("Fehler", "Fehler beim Suchen in der Datenbank.", true); }
+        }
+
+        function populateFormForEdit(data) {
+            currentEditDocId = data.id;
+            currentEditDeleteCode = data.deleteCode;
+            document.getElementById('mitmach-form').reset();
+            document.querySelectorAll('.text-input.hidden').forEach(el => el.classList.add('hidden'));
+            clearKinderFields();
+            if(data.kinder && data.kinder.length > 0) data.kinder.forEach(k => addKindField(k.name, k.startSchuljahr, k.startKlasse));
+            else if (data.kindName) addKindField(data.kindName, data.startSchuljahr, data.startKlasse);
+            else addKindField();
+
+            const setVal = (id, val) => { if(document.getElementById(id)) document.getElementById(id).value = val || ''; }
+            setVal('f_elternName', data.elternName); setVal('f_telefon', data.telefon); setVal('f_email', data.email);
+            setVal('f_betriebName', data.betriebName); setVal('f_ortDatum', data.ortDatum); setVal('f_unterschrift', data.unterschrift);
+            if(data.dsgvo) document.getElementById('f_dsgvo').checked = true;
+            if(data.isPaused) document.getElementById('f_isPaused').checked = true;
+
+            const checkBoxes = (name, arr) => { if(arr) document.querySelectorAll(`input[name="${name}"]`).forEach(cb => { if(arr.includes(cb.value)) cb.checked = true; }); };
+            checkBoxes('c_beruf', data.berufe); checkBoxes('c_betrieb', data.betrieb); checkBoxes('c_hobbys', data.hobbys); checkBoxes('c_events', data.events); checkBoxes('c_vereine', data.vereine);
+
+            const handleHiddenInput = (baseName, detailVal, inputId, valueName) => {
+                if(detailVal) {
+                    const cb = document.querySelector(`input[name="${baseName}"][value="${valueName}"]`);
+                    if(cb) { cb.checked = true; document.getElementById(inputId).value = detailVal; document.getElementById(inputId).classList.remove('hidden'); }
+                }
+            };
+            handleHiddenInput('c_beruf', data.beruf_handwerk_detail, 'beruf_handwerk_input', 'Handwerk');
+            handleHiddenInput('c_beruf', data.beruf_sport_detail, 'beruf_sport_input', 'Sport');
+            handleHiddenInput('c_beruf', data.beruf_sonstiges_detail, 'beruf_sonstiges_input', 'Sonstiges');
+            handleHiddenInput('c_betrieb', data.betrieb_sonstiges_detail, 'betrieb_sonstiges_input', 'Sonstiges');
+            handleHiddenInput('c_hobbys', data.hobbys_sonstiges_detail, 'hobbys_sonstiges_input', 'Sonstiges');
+            handleHiddenInput('c_events', data.events_sonstiges_detail, 'events_sonstiges_input', 'Sonstiges');
+            handleHiddenInput('c_vereine', data.vereine_sport_detail, 'vereine_sport_input', 'Sportverein');
+            handleHiddenInput('c_vereine', data.vereine_kultur_detail, 'vereine_kultur_input', 'Kulturverein');
+            handleHiddenInput('c_vereine', data.vereine_natur_detail, 'vereine_natur_input', 'Naturverein');
+            handleHiddenInput('c_vereine', data.vereine_sozial_detail, 'vereine_sozial_input', 'Sozialer Verein');
+            handleHiddenInput('c_vereine', data.vereine_sonstiges_detail, 'vereine_sonstiges_input', 'Sonstiges');
+
+            if(data.gueltigkeit) { const r = document.querySelector(`input[name="r_gueltigkeit"][value="${data.gueltigkeit}"]`); if(r) r.checked = true; }
+            if(data.zeit) { const r = document.querySelector(`input[name="r_zeit"][value="${data.zeit}"]`); if(r) r.checked = true; }
+
+            document.getElementById('edit-mode-banner').classList.remove('hidden');
+            document.getElementById('btn-submit').innerHTML = 'Änderungen speichern <i class="fas fa-save ml-2"></i>';
+            switchView('form'); window.scrollTo(0,0);
+        }
+
+        window.cancelEdit = function() {
+            currentEditDocId = null; currentEditDeleteCode = null;
+            document.getElementById('mitmach-form').reset();
+            document.querySelectorAll('.text-input.hidden').forEach(el => el.classList.add('hidden'));
+            clearKinderFields(); addKindField();
+            document.getElementById('edit-mode-banner').classList.add('hidden');
+            document.getElementById('f_isPaused').checked = false;
+            document.getElementById('btn-submit').innerHTML = 'Mitmachbogen absenden <i class="fas fa-paper-plane ml-2"></i>';
+        }
+
+        window.attemptDelete = function() {
+            const inputCode = document.getElementById('edit-code-input').value.trim().toUpperCase();
+            if(!inputCode) { showMessage("Hinweis", "Bitte Code eingeben.", true); return; }
+            
+            showConfirm("Angebot löschen", "Möchten Sie Ihr Angebot wirklich unwiderruflich aus der Schuldatenbank löschen?", async () => {
+                showLoader("Lösche Eintrag...");
+                try {
+                    if (db && auth.currentUser) {
+                        let collRef = MY_FIREBASE_CONFIG ? collection(db, 'elternhelfer') : collection(db, 'artifacts', appId, 'public', 'data', 'elternhelfer');
+                        const snapshot = await getDocs(collRef);
+                        let foundDocId = null;
+                        snapshot.forEach(doc => { if(doc.data().deleteCode === inputCode) foundDocId = doc.id; });
+                        if(foundDocId) {
+                            let docRef = MY_FIREBASE_CONFIG ? doc(db, 'elternhelfer', foundDocId) : doc(db, 'artifacts', appId, 'public', 'data', 'elternhelfer', foundDocId);
+                            await deleteDoc(docRef);
+                            hideLoader(); document.getElementById('edit-code-input').value = ""; showMessage("Gelöscht", "Erfolgreich gelöscht.", false); switchView('form');
+                        } else { hideLoader(); showMessage("Fehler", "Code nicht gefunden.", true); }
+                    } else {
+                        const initialLen = volunteersData.length;
+                        volunteersData = volunteersData.filter(d => d.deleteCode !== inputCode);
+                        hideLoader();
+                        if(volunteersData.length < initialLen) { document.getElementById('edit-code-input').value = ""; showMessage("Gelöscht", "(Mock) Erfolgreich gelöscht.", false); switchView('form'); }
+                        else showMessage("Fehler", "Code nicht gefunden.", true);
+                    }
+                } catch (err) { hideLoader(); console.error(err); showMessage("Fehler", "Fehler beim Löschen.", true); }
+            });
+        }
+
+        // --- BULK MAIL FEATURE ---
+        window.toggleSelectAll = function(sourceCb) {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = sourceCb.checked);
+        }
+
+        window.sendBulkMail = function() {
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            if(checkedBoxes.length === 0) return showMessage("Hinweis", "Bitte markieren Sie zuerst Eltern in der Tabelle (Checkbox links).", true);
+            
+            let emails = [];
+            checkedBoxes.forEach(cb => {
+                const entry = volunteersData.find(v => v.id === cb.value);
+                if(entry && entry.email) emails.push(entry.email);
+            });
+
+            if(emails.length === 0) return showMessage("Fehler", "Die ausgewählten Eltern haben keine E-Mail Adresse hinterlegt.", true);
+            
+            const bccString = emails.join(',');
+            const subject = encodeURIComponent("Anfrage der Schule (Helferkartei)");
+            const body = encodeURIComponent("Sehr geehrte Eltern,\n\nvielen Dank für Ihre Bereitschaft, uns zu unterstützen. Wir planen aktuell...\n\nHerzliche Grüße\n");
+            
+            const mailtoLink = `mailto:?bcc=${bccString}&subject=${subject}&body=${body}`;
+            window.location.href = mailtoLink;
+        }
+
+        function generateMailtoLink(entry) {
+            const subject = encodeURIComponent("Ihre Unterstützung an unserer Schule (Helferkartei)");
+            let skillFocus = "den verschiedenen Bereichen";
+            if (entry.events && entry.events.length > 0) skillFocus = entry.events[0];
+            else if (entry.berufe && entry.berufe.length > 0) skillFocus = entry.berufe[0];
+            else if (entry.hobbys && entry.hobbys.length > 0) skillFocus = entry.hobbys[0];
+            else if (entry.betriebName) skillFocus = "Ihrem Unternehmen";
+
+            const bodyText = `Sehr geehrte(r) ${entry.elternName || 'Familie'},\n\nzunächst möchten wir uns herzlich bedanken, dass Sie sich in unsere Helferkartei eingetragen haben!\n\nWir haben gesehen, dass Sie uns u.a. im Bereich "${skillFocus}" Unterstützung angeboten haben. Aktuell planen wir hierzu ein Projekt/eine Veranstaltung und würden uns sehr über Ihre Expertise oder Mithilfe freuen.\n\nHätten Sie in nächster Zeit eventuell Kapazitäten, uns hierbei zu unterstützen? Lassen Sie uns gern wissen, ob und wie es zeitlich bei Ihnen passen würde.\n\nHerzliche Grüße,\n\n[Ihr Name / Ihre Klasse]`;
+            return `mailto:${entry.email}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+        }
+
+        // --- GDPR CLEANUP (BULK DELETE EXPIRED) ---
+        window.openCleanupModal = function() {
+            const currentYear = getCurrentSchoolYear();
+            expiredDocIdsForCleanup = [];
+            
+            volunteersData.forEach(entry => {
+                let kinderList = entry.kinder || [];
+                if(kinderList.length === 0 && entry.kindName) kinderList = [{name: entry.kindName, startSchuljahr: entry.startSchuljahr, startKlasse: entry.startKlasse}];
+                
+                let allKidsAbgelaufen = true;
+                kinderList.forEach(k => {
+                    const status = calculateClassStatus(k.startSchuljahr, k.startKlasse, currentYear);
+                    if(!status.isAbgelaufen) allKidsAbgelaufen = false;
+                });
+                let isAbgelaufen = allKidsAbgelaufen;
+                if (entry.gueltigkeit === 'nur_dieses_jahr') {
+                    const eJahr = kinderList.length > 0 ? kinderList[0].startSchuljahr : (new Date(entry.timestamp).getFullYear());
+                    if ((currentYear - eJahr) > 0) isAbgelaufen = true;
+                }
+                
+                if(isAbgelaufen) expiredDocIdsForCleanup.push(entry.id);
+            });
+
+            if(expiredDocIdsForCleanup.length === 0) {
+                showMessage("Perfekt", "Die Datenbank ist sauber. Es gibt derzeit keine abgelaufenen Einträge.", false);
+            } else {
+                document.getElementById('cleanup-count').innerText = expiredDocIdsForCleanup.length;
+                document.getElementById('cleanup-modal').classList.remove('hidden');
+            }
+        }
+
+        window.confirmCleanup = async function() {
+            showLoader("Lösche abgelaufene Einträge...");
+            document.getElementById('cleanup-modal').classList.add('hidden');
+            try {
+                if (db && auth.currentUser) {
+                    await Promise.all(expiredDocIdsForCleanup.map(id => {
+                        let docRef = MY_FIREBASE_CONFIG ? doc(db, 'elternhelfer', id) : doc(db, 'artifacts', appId, 'public', 'data', 'elternhelfer', id);
+                        return deleteDoc(docRef);
+                    }));
+                } else {
+                    volunteersData = volunteersData.filter(v => !expiredDocIdsForCleanup.includes(v.id));
+                }
+                hideLoader();
+                showMessage("Erfolgreich", `${expiredDocIdsForCleanup.length} Einträge wurden DSGVO-konform gelöscht.`, false);
+                if(!db) renderTable();
+            } catch (err) {
+                hideLoader(); console.error(err); showMessage("Fehler", "Fehler beim Löschen.", true);
+            }
+        }
+
+        // --- ADMIN EXTRA FEATURES ---
+        window.markContacted = function(docId) {
+            showConfirm("Kontakt speichern", "Möchten Sie eintragen, dass Sie diese Familie heute kontaktiert haben?", async () => {
+                showLoader("Speichere Kontakt-Datum...");
+                try {
+                    const now = Date.now();
+                    if(db && auth.currentUser) {
+                        let docRef = MY_FIREBASE_CONFIG ? doc(db, 'elternhelfer', docId) : doc(db, 'artifacts', appId, 'public', 'data', 'elternhelfer', docId);
+                        await updateDoc(docRef, { lastContacted: now });
+                    } else {
+                        const idx = volunteersData.findIndex(v => v.id === docId);
+                        if(idx > -1) volunteersData[idx].lastContacted = now;
+                    }
+                    hideLoader();
+                    if(!db) renderTable(); 
+                } catch(e) { hideLoader(); showMessage("Fehler", "Fehler beim Speichern.", true); }
+            });
+        }
+
+        window.openNoteModal = function(docId) {
+            const entry = volunteersData.find(v => v.id === docId);
+            if(!entry) return;
+            window.currentNoteDocId = docId;
+            document.getElementById('note-modal-name').innerText = entry.elternName || 'Unbekannt';
+            document.getElementById('admin-note-textarea').value = entry.adminNotes || '';
+            document.getElementById('admin-note-modal').classList.remove('hidden');
+        }
+
+        window.saveNoteModal = async function() {
+            const noteText = document.getElementById('admin-note-textarea').value.trim();
+            showLoader("Speichere Notiz...");
+            try {
+                if(db && auth.currentUser) {
+                    let docRef = MY_FIREBASE_CONFIG ? doc(db, 'elternhelfer', window.currentNoteDocId) : doc(db, 'artifacts', appId, 'public', 'data', 'elternhelfer', window.currentNoteDocId);
+                    await updateDoc(docRef, { adminNotes: noteText });
+                } else {
+                    const idx = volunteersData.findIndex(v => v.id === window.currentNoteDocId);
+                    if(idx > -1) volunteersData[idx].adminNotes = noteText;
+                }
+                document.getElementById('admin-note-modal').classList.add('hidden');
+                hideLoader();
+                if(!db) renderTable();
+            } catch(e) { hideLoader(); showMessage("Fehler", "Fehler beim Speichern.", true); }
+        }
+
+        // --- ADMIN DASHBOARD ---
+        function loadAdminData() {
+            if (!db || !auth.currentUser) { renderTable(); return; }
+            showLoader("Lade Datenbank...");
+            let collRef = MY_FIREBASE_CONFIG ? collection(db, 'elternhelfer') : collection(db, 'artifacts', appId, 'public', 'data', 'elternhelfer');
+            
+            unsubscribeSnapshot = onSnapshot(collRef, (snapshot) => {
+                volunteersData = [];
+                snapshot.forEach((doc) => volunteersData.push({ id: doc.id, ...doc.data() }));
+                volunteersData.sort((a,b) => b.timestamp - a.timestamp); 
+                hideLoader(); renderTable();
+            }, (error) => { hideLoader(); console.error(error); showMessage("Fehler", "Fehler beim Laden der Daten.", true); });
+        }
+
+        function calculateClassStatus(startSchuljahr, startKlasse, currentYear) {
+            if(!startSchuljahr || !startKlasse) return { text: "Unbekannt", isAbgelaufen: false };
+            const diff = currentYear - startSchuljahr;
+            const calcKlasse = startKlasse + diff;
+            // ANPASSUNG: Ab > 10 ist das Kind von der Schule!
+            if (calcKlasse > 10) return { text: "Schule verlassen", isAbgelaufen: true, calcKlasse };
+            return { text: `Klasse ${calcKlasse}`, isAbgelaufen: false, calcKlasse };
+        }
+
+        window.renderTable = function() {
+            const tbody = document.getElementById('table-body');
+            const searchStr = document.getElementById('search-input').value.toLowerCase();
+            const gueltigkeitFilter = document.getElementById('filter-gueltigkeit').value;
+            const currentYear = getCurrentSchoolYear();
+
+            document.getElementById('select-all-cb').checked = false; // Reset bulk checkbox
+            tbody.innerHTML = '';
+            let countVisible = 0, statTotalActive = 0, statEvents = 0, statHobbys = 0, statRegular = 0, statPaused = 0;
+
+            volunteersData.forEach(entry => {
+                let kinderList = entry.kinder || [];
+                if(kinderList.length === 0 && entry.kindName) kinderList = [{name: entry.kindName, startSchuljahr: entry.startSchuljahr, startKlasse: entry.startKlasse}];
+                let allKidsAbgelaufen = true; let kinderHtml = ''; let kinderSearchText = '';
+                kinderList.forEach(k => {
+                    const status = calculateClassStatus(k.startSchuljahr, k.startKlasse, currentYear);
+                    if(!status.isAbgelaufen) allKidsAbgelaufen = false;
+                    kinderHtml += `<div class="font-semibold text-gray-700">${k.name} <span class="text-xs font-bold text-[#e59f48] bg-orange-50 px-1 py-0.5 rounded border border-orange-100 ml-1">${status.text}</span></div>`;
+                    kinderSearchText += `${k.name} ${status.text} `;
+                });
+
+                let isAbgelaufen = allKidsAbgelaufen;
+                if (entry.gueltigkeit === 'nur_dieses_jahr') {
+                    const eJahr = kinderList.length > 0 ? kinderList[0].startSchuljahr : (new Date(entry.timestamp).getFullYear());
+                    if ((currentYear - eJahr) > 0) isAbgelaufen = true;
+                }
+                
+                const isPaused = entry.isPaused === true;
+
+                if(isPaused) statPaused++;
+                if(!isAbgelaufen && !isPaused) {
+                    statTotalActive++;
+                    if(entry.events && entry.events.length > 0) statEvents++;
+                    if((entry.hobbys && entry.hobbys.length > 0) || (entry.berufe && entry.berufe.length > 0)) statHobbys++;
+                    if(entry.zeit === 'regelmäßig') statRegular++;
+                }
+
+                if (gueltigkeitFilter === 'aktive' && (isAbgelaufen || isPaused)) return;
+                if (gueltigkeitFilter === 'abgelaufen' && !isAbgelaufen) return;
+                if (gueltigkeitFilter === 'pausiert' && !isPaused) return;
+
+                const allSkills = [
+                    ...(entry.berufe||[]), entry.beruf_handwerk_detail, entry.beruf_sport_detail, entry.beruf_sonstiges_detail,
+                    ...(entry.betrieb||[]), entry.betrieb_sonstiges_detail,
+                    ...(entry.hobbys||[]), entry.hobbys_sonstiges_detail,
+                    ...(entry.events||[]), entry.events_sonstiges_detail,
+                    ...(entry.vereine||[]), entry.vereine_sport_detail, entry.vereine_kultur_detail, entry.vereine_natur_detail, entry.vereine_sozial_detail, entry.vereine_sonstiges_detail
+                ].filter(Boolean).join(" ");
+                const searchable = `${entry.elternName} ${entry.email} ${entry.telefon} ${kinderSearchText} ${entry.zeit} ${allSkills} ${entry.adminNotes||''}`.toLowerCase();
+                
+                if (searchStr) {
+                    const searchTerms = searchStr.split(' ').filter(t => t.trim() !== '');
+                    if(!searchTerms.every(term => searchable.includes(term))) return;
+                }
+                countVisible++;
+
+                let badgesHTML = '';
+                const addBadge = (text, colorClass) => { if(text) badgesHTML += `<span class="inline-block px-2 py-1 ${colorClass} text-white text-xs rounded-full m-0.5 shadow-sm">${text}</span>`; };
+                
+                (entry.berufe||[]).forEach(b => {
+                    let label = b;
+                    if (b === 'Handwerk' && entry.beruf_handwerk_detail) label += ': ' + entry.beruf_handwerk_detail;
+                    if (b === 'Sport' && entry.beruf_sport_detail) label += ': ' + entry.beruf_sport_detail;
+                    addBadge(label, 'bg-[#729b5a]');
+                });
+                (entry.hobbys||[]).forEach(h => addBadge(h, 'bg-[#8f71a9]'));
+                (entry.events||[]).forEach(e => addBadge(e, 'bg-[#3c8f99]'));
+                (entry.vereine||[]).forEach(v => {
+                    let label = v;
+                    if (v === 'Sportverein' && entry.vereine_sport_detail) label += ': ' + entry.vereine_sport_detail;
+                    if (v === 'Kulturverein' && entry.vereine_kultur_detail) label += ': ' + entry.vereine_kultur_detail;
+                    if (v === 'Naturverein' && entry.vereine_natur_detail) label += ': ' + entry.vereine_natur_detail;
+                    if (v === 'Sozialer Verein' && entry.vereine_sozial_detail) label += ': ' + entry.vereine_sozial_detail;
+                    if (v === 'Sonstiges' && entry.vereine_sonstiges_detail) label += ': ' + entry.vereine_sonstiges_detail;
+                    addBadge(label, 'bg-[#4a7fb2]');
+                });
+
+                const tr = document.createElement('tr');
+                if(isAbgelaufen) tr.className = 'bg-red-50 opacity-75 transition';
+                else if(isPaused) tr.className = 'bg-gray-100 opacity-60 grayscale transition';
+                else tr.className = 'hover:bg-blue-50 transition';
+                
+                let gueltigkeitLabel = entry.gueltigkeit === 'nur_dieses_jahr' ? 'Nur dieses SJ' : 'Dauerhaft';
+                let abgelaufenBadge = isAbgelaufen ? `<div class="mt-1 no-print"><span class="bg-red-500 text-white text-xs px-2 py-1 rounded font-bold uppercase tracking-wider">Abgelaufen</span></div><div class="hidden print-only text-xs font-bold">(Abgelaufen)</div>` : '';
+                let pausedBadge = isPaused ? `<div class="mt-1 no-print"><span class="bg-gray-500 text-white text-xs px-2 py-1 rounded font-bold uppercase tracking-wider">Pausiert</span></div>` : '';
+
+                let lastContactHtml = '';
+                if(entry.lastContacted) {
+                    const d = new Date(entry.lastContacted).toLocaleDateString('de-DE');
+                    lastContactHtml = `<div class="text-[10px] text-gray-500 font-bold mt-1.5 flex items-center bg-gray-100 rounded px-1 w-max"><i class="fas fa-history mr-1"></i> Letzter Kontakt: ${d}</div>`;
+                }
+
+                const mailBtnHtml = entry.email ? `
+                    <div class="text-xs flex items-center mt-2 flex-wrap gap-1 no-print">
+                        <a href="${generateMailtoLink(entry)}" class="bg-blue-100 text-[#1e5b82] hover:bg-blue-200 px-2 py-1 rounded transition flex items-center shadow-sm font-bold" title="Mail mit Vorlage schreiben">
+                            <i class="fas fa-paper-plane mr-1"></i> Schreiben
+                        </a>
+                        <button onclick="markContacted('${entry.id}')" class="bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-green-600 px-2 py-1 rounded transition flex items-center shadow-sm border border-gray-200" title="Als 'heute kontaktiert' markieren">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                ` : '';
+
+                const noteContent = entry.adminNotes ? entry.adminNotes : '<span class="italic text-yellow-600 opacity-50 font-normal">Keine Notiz (Klick zum Hinzufügen)</span>';
+                const noteHtml = `
+                    <div class="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800 relative group cursor-pointer hover:bg-yellow-100 transition" onclick="openNoteModal('${entry.id}')" title="Notiz bearbeiten">
+                        <div class="font-bold mb-1 flex justify-between items-center">
+                            <span><i class="fas fa-sticky-note"></i> Interne Notiz / Tags</span>
+                            <i class="fas fa-edit text-yellow-500 opacity-0 group-hover:opacity-100 transition no-print"></i>
+                        </div>
+                        <div class="whitespace-pre-wrap leading-tight">${noteContent}</div>
+                    </div>
+                `;
+
+                tr.innerHTML = `
+                    <td class="p-3 border-t border-gray-100 border-r text-center no-print align-middle">
+                        ${entry.email && !isAbgelaufen ? `<input type="checkbox" class="row-checkbox w-4 h-4 cursor-pointer accent-[#1e5b82]" value="${entry.id}">` : ''}
+                    </td>
+                    <td class="p-3 border-t border-gray-100 min-w-[200px]">
+                        <div class="font-bold text-[#1e5b82] text-base">${entry.elternName || 'Unbekannt'}</div>
+                        ${entry.telefon ? `<div class="text-xs text-gray-500 mt-1"><i class="fas fa-phone w-4 no-print text-[#3c8f99]"></i> ${entry.telefon}</div>` : ''}
+                        ${entry.email ? `<div class="text-xs text-gray-500"><i class="fas fa-envelope w-4 no-print text-[#3c8f99]"></i> ${entry.email}</div>` : ''}
+                        ${mailBtnHtml}
+                        ${lastContactHtml}
+                        <div class="mt-2 no-print"><span class="text-[10px] font-mono bg-gray-50 text-gray-400 px-1.5 py-0.5 rounded border border-gray-100 select-all cursor-text" title="Bearbeitungs-Code (Doppelklick zum Kopieren)"><i class="fas fa-key mr-1"></i>${entry.deleteCode}</span></div>
+                        ${noteHtml}
+                    </td>
+                    <td class="p-3 border-t border-gray-100 align-top">
+                        ${kinderHtml || '<span class="text-gray-400 italic">Keine Kinder angegeben</span>'}
+                    </td>
+                    <td class="p-3 border-t border-gray-100 max-w-[300px] flex-wrap align-top leading-relaxed">
+                        ${badgesHTML || '<span class="text-gray-400 text-xs italic">Keine Angabe</span>'}
+                        ${(entry.betriebName || (entry.betrieb && entry.betrieb.length > 0)) ? `<div class="text-xs text-gray-500 mt-2 border-t pt-1"><i class="fas fa-industry no-print"></i> Betrieb: ${entry.betriebName}</div>` : ''}
+                    </td>
+                    <td class="p-3 border-t border-gray-100 align-top">
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs whitespace-nowrap font-medium block w-max mb-1">${entry.zeit || '?'}</span>
+                        <span class="text-xs text-gray-500"><i class="fas fa-clock no-print"></i> ${gueltigkeitLabel}</span>
+                        ${abgelaufenBadge}
+                        ${pausedBadge}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('stat-total').innerText = statTotalActive;
+            document.getElementById('stat-events').innerText = statEvents;
+            document.getElementById('stat-hobbys').innerText = statHobbys;
+            document.getElementById('stat-regular').innerText = statRegular;
+            document.getElementById('stat-paused').innerText = statPaused;
+            document.getElementById('filtered-count').innerText = countVisible;
+
+            if(countVisible === 0) { document.getElementById('empty-state').classList.remove('hidden'); document.getElementById('admin-table').classList.add('hidden'); }
+            else { document.getElementById('empty-state').classList.add('hidden'); document.getElementById('admin-table').classList.remove('hidden'); }
+        }
+
+        // --- EXPORT TO CSV ---
+        window.exportCSV = function() {
+            if (volunteersData.length === 0) return showMessage("Hinweis", "Keine Daten vorhanden.", true);
+            const currentYear = getCurrentSchoolYear();
+            const header = ["Status", "Eingereicht am", "Zuletzt kontaktiert", "Interne Notizen", "Elternteil", "Kinder (Name & Klasse)", "Telefon", "E-Mail", "Berufe", "Details Beruf", "Betrieb", "Betrieb Unterstützung", "Hobbys", "Veranstaltungen", "Vereine", "Details Vereine", "Zeitlicher Umfang", "Gültigkeit", "Bearbeitungs-Code"].join(";");
+            const escapeCsv = (str) => `"${(str||'').toString().replace(/"/g, '""')}"`;
+
+            const rows = volunteersData.map(e => {
+                const date = new Date(e.timestamp).toLocaleDateString('de-DE');
+                const lastContact = e.lastContacted ? new Date(e.lastContacted).toLocaleDateString('de-DE') : "";
+                
+                let kinderList = e.kinder || [];
+                if(kinderList.length===0 && e.kindName) kinderList = [{name: e.kindName, startSchuljahr: e.startSchuljahr, startKlasse: e.startKlasse}];
+                
+                let allKidsAbgelaufen = true;
+                let kinderStrings = kinderList.map(k => {
+                    const status = calculateClassStatus(k.startSchuljahr, k.startKlasse, currentYear);
+                    if(!status.isAbgelaufen) allKidsAbgelaufen = false;
+                    return `${k.name} (${status.text})`;
+                }).join(" | ");
+
+                let isAbgelaufen = allKidsAbgelaufen;
+                if (e.gueltigkeit === 'nur_dieses_jahr') {
+                    const eJahr = kinderList.length > 0 ? kinderList[0].startSchuljahr : (new Date(e.timestamp).getFullYear());
+                    if ((currentYear - eJahr) > 0) isAbgelaufen = true;
+                }
+                
+                let statusStr = "AKTIV";
+                if(isAbgelaufen) statusStr = "ABGELAUFEN";
+                else if(e.isPaused) statusStr = "PAUSIERT";
+
+                return [
+                    statusStr, date, lastContact, e.adminNotes || "", 
+                    e.elternName, kinderStrings, e.telefon, e.email,
+                    (e.berufe||[]).join(", "), [e.beruf_handwerk_detail, e.beruf_sport_detail, e.beruf_sonstiges_detail].filter(Boolean).join(" | "),
+                    e.betriebName, (e.betrieb||[]).join(", ") + " " + (e.betrieb_sonstiges_detail || ""),
+                    (e.hobbys||[]).join(", ") + " " + (e.hobbys_sonstiges_detail || ""),
+                    (e.events||[]).join(", ") + " " + (e.events_sonstiges_detail || ""),
+                    (e.vereine||[]).join(", "), [e.vereine_sport_detail, e.vereine_kultur_detail, e.vereine_natur_detail, e.vereine_sozial_detail, e.vereine_sonstiges_detail].filter(Boolean).join(" | "),
+                    e.zeit, e.gueltigkeit === 'nur_dieses_jahr' ? 'Nur dieses SJ' : 'Dauerhaft', e.deleteCode
+                ].map(escapeCsv).join(";");
+            });
+
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8,\uFEFF" + [header, ...rows].join("\n")));
+            link.setAttribute("download", `Elternhelferkartei_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
+
+
+
